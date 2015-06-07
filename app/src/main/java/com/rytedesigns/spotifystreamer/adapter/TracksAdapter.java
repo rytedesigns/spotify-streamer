@@ -14,6 +14,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import kaaes.spotify.webapi.android.models.Image;
 import kaaes.spotify.webapi.android.models.Track;
 
@@ -42,6 +44,15 @@ public class TracksAdapter extends ArrayAdapter<Track> {
 
     private final String LOG_TAG = TracksAdapter.class.getSimpleName();
 
+    @InjectView(R.id.album_imageview)
+    ImageView albumImageView;
+
+    @InjectView(R.id.track_textview)
+    TextView trackNameTextView;
+
+    @InjectView(R.id.album_textview)
+    TextView albumNameTextView;
+
     public TracksAdapter(Context context, int resource) {
         super(context, resource);
     }
@@ -69,20 +80,18 @@ public class TracksAdapter extends ArrayAdapter<Track> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        View rootView;
+        View rootView = convertView;
 
-        if (convertView == null) {
+        if (rootView == null) {
             LayoutInflater mInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             rootView = mInflater.inflate(R.layout.list_item_tracks, parent, false);
-        } else {
-            rootView = convertView;
         }
 
-        Track track;
+        ButterKnife.inject(this, rootView);
 
-        if (getItem(position) != null) {
-            track = getItem(position);
-        } else {
+        Track track = getItem(position);
+
+        if (getItem(position) == null) {
             track = new Track();
         }
 
@@ -95,28 +104,26 @@ public class TracksAdapter extends ArrayAdapter<Track> {
                             .resizeDimen(R.dimen.image_width, R.dimen.image_height)
                             .error(R.mipmap.ic_launcher)
                             .placeholder(R.mipmap.ic_launcher)
-                            .into((ImageView) rootView.findViewById(R.id.album_imageview));
+                            .into(albumImageView);
                 }
             }
         } else {
             Picasso.with(getContext())
                     .load(R.mipmap.ic_launcher)
                     .resizeDimen(R.dimen.image_width, R.dimen.image_height)
-                    .into((ImageView) rootView.findViewById(R.id.album_imageview));
+                    .into(albumImageView);
         }
 
         // Track Name
         String trackName = getItem(position).name;
 
-        // Find the Track Name TextView and set it.
-        TextView trackNameTextView = (TextView) rootView.findViewById(R.id.track_textview);
+        // Set the Track Name TextView.
         trackNameTextView.setText(trackName);
 
         // Album Name
         String albumName = getItem(position).album.name;
 
-        // Find the Artist Name TextView and set it.
-        TextView albumNameTextView = (TextView) rootView.findViewById(R.id.album_textview);
+        // Set the Artist Name TextView.
         albumNameTextView.setText(albumName);
 
         return rootView;

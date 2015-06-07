@@ -14,6 +14,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.Image;
 
@@ -40,6 +42,12 @@ import kaaes.spotify.webapi.android.models.Image;
 public class ArtistsAdapter extends ArrayAdapter<Artist> {
 
     private final String LOG_TAG = ArtistsAdapter.class.getSimpleName();
+
+    @InjectView(R.id.artist_textview)
+    TextView artistNameTextView;
+
+    @InjectView(R.id.artist_imageview)
+    ImageView artistImageView;
 
     public ArtistsAdapter(Context context, int resource) {
         super(context, resource);
@@ -68,20 +76,18 @@ public class ArtistsAdapter extends ArrayAdapter<Artist> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        View rootView;
+        View rootView = convertView;
 
-        if (convertView == null) {
+        if (rootView == null) {
             LayoutInflater mInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             rootView = mInflater.inflate(R.layout.list_item_artists, parent, false);
-        } else {
-            rootView = convertView;
         }
 
-        Artist artist;
+        ButterKnife.inject(this, rootView);
 
-        if (getItem(position) != null) {
-            artist = getItem(position);
-        } else {
+        Artist artist = getItem(position);
+
+        if (getItem(position) == null) {
             artist = new Artist();
         }
 
@@ -94,21 +100,20 @@ public class ArtistsAdapter extends ArrayAdapter<Artist> {
                             .resizeDimen(R.dimen.image_width, R.dimen.image_height)
                             .error(R.mipmap.ic_launcher)
                             .placeholder(R.mipmap.ic_launcher)
-                            .into((ImageView) rootView.findViewById(R.id.artist_imageview));
+                            .into(artistImageView);
                 }
             }
         } else {
             Picasso.with(getContext())
                     .load(R.mipmap.ic_launcher)
                     .resizeDimen(R.dimen.image_width, R.dimen.image_height)
-                    .into((ImageView) rootView.findViewById(R.id.artist_imageview));
+                    .into(artistImageView);
         }
 
         // Artist Name
         String artistName = getItem(position).name;
 
-        // Find the Artist Name TextView and set it.
-        TextView artistNameTextView = (TextView) rootView.findViewById(R.id.artist_textview);
+        // Set the Artist Name TextView.
         artistNameTextView.setText(artistName);
 
         return rootView;

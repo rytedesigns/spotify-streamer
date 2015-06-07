@@ -21,11 +21,18 @@ import com.rytedesigns.spotifystreamer.adapter.ArtistsAdapter;
 
 import java.util.ArrayList;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnItemClick;
+import butterknife.OnTextChanged;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Pager;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * This class uses the Spotify Wraper API from https://github.com/kaaes/spotify-web-api-android
@@ -40,7 +47,11 @@ public class ArtistSearchFragment extends Fragment {
 
     private ArtistsAdapter mArtistsAdapter;
 
-    private EditText artistEditText;
+    @InjectView(R.id.artist_edittext)
+    public EditText artistEditText;
+
+    @InjectView(R.id.listview_artists)
+    public ListView artistsListView;
 
     public ArtistSearchFragment() {
     }
@@ -62,39 +73,12 @@ public class ArtistSearchFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_artists, container, false);
 
+        ButterKnife.inject(this, rootView);
+
         // Found information on updating the array adapters image
         mArtistsAdapter = new ArtistsAdapter(getActivity(), R.layout.list_item_artists, new ArrayList<Artist>());
 
-        ListView artistsListView = (ListView) rootView.findViewById(R.id.listview_artists);
-
         artistsListView.setAdapter(mArtistsAdapter);
-
-        artistsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getActivity(), "Artist " + mArtistsAdapter.getItem(position).name + " was clicked.", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getActivity(), TopTenTracksActivity.class);
-                intent.putExtra(KEY_ARTIST_ID, mArtistsAdapter.getItem(position).id);
-                startActivity(intent);
-            }
-        });
-
-        artistEditText = (EditText) rootView.findViewById(R.id.artist_edittext);
-
-        artistEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                searchForArtist();
-            }
-        });
 
         if (savedInstanceState != null && savedInstanceState.get(KEY_ARTIST_NAME) != null) {
             artistEditText.setText(savedInstanceState.get(KEY_ARTIST_NAME).toString());
@@ -108,55 +92,77 @@ public class ArtistSearchFragment extends Fragment {
         if (artistEditText != null && artistEditText.getText().length() > 0) {
             outState.putString(KEY_ARTIST_NAME, artistEditText.getText().toString());
         }
-
         super.onSaveInstanceState(outState);
     }
 
-    public void searchForArtist() {
-        SearchArtistTask searchArtistTask = new SearchArtistTask();
-        searchArtistTask.execute(artistEditText.getText().toString());
+    @OnItemClick(R.id.listview_artists)
+    public void onArtistItemClicked(AdapterView<?> parent, View view, int position, long id)
+    {
+        Toast.makeText(getActivity(), "Artist " + mArtistsAdapter.getItem(position).name + " was clicked.", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(getActivity(), TopTenTracksActivity.class);
+        intent.putExtra(KEY_ARTIST_ID, mArtistsAdapter.getItem(position).id);
+        startActivity(intent);
     }
 
-    public class SearchArtistTask extends AsyncTask<String, Void, Pager<Artist>> {
-        @Override
-        protected Pager<Artist> doInBackground(String... params) {
-
-            if (params != null && params[0].length() > 0) {
-                SpotifyApi api = new SpotifyApi();
-                SpotifyService spotify = api.getService();
-                ArtistsPager results = spotify.searchArtists(params[0]);
-
-                if (results != null && results.artists != null && results.artists.items.size() > 0) {
-                    return results.artists;
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Pager<Artist> artists) {
-            if (artists != null) {
-                mArtistsAdapter.clear();
-
-                for (Artist artist : artists.items) {
-                    Log.d(LOG_TAG, artist.name);
-                    Log.d(LOG_TAG, artist.id);
-                    Log.d(LOG_TAG, artist.genres.size() + "");
-                    if (artist.images.size() == 0) {
-                        Log.d(LOG_TAG, "Has zero images!");
-                    } else {
-                        Log.d(LOG_TAG, artist.images.get(0).url);
+    @OnTextChanged(R.id.artist_edittext)
+    public void searchForArtist() {
+        if (artistEditText != null && artistEditText.getText().length() > 0) {
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
+            spotify.searchArtists(artistEditText.getText().toString(), new Callback<ArtistsPager>() {
+                @Override
+                public void success(final ArtistsPager artistsPager, Response response) {
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            updateArrayAdapter(artistsPager);
+                        }
+                    };
+                    if(getActivity() != null)
+                    {
+                        getActivity().runOnUiThread(runnable);
                     }
-                    Log.d(LOG_TAG, String.valueOf(artist.popularity));
-                    mArtistsAdapter.add(artist);
                 }
-            } else {
-                Toast.makeText(getActivity(), "Unable to locate specified artist.\n" +
-                        "Verify spelling or try different a name.\n", Toast.LENGTH_LONG).show();
+
+                @Override
+                public void failure(RetrofitError error) {
+                    if (error.getKind() == RetrofitError.Kind.NETWORK)
+                    {
+                        Runnable runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getActivity(), R.string.toast_message_unable_to_reach_spotify, Toast.LENGTH_SHORT).show();
+                            }
+                        };
+                        if(getActivity() != null)
+                        {
+                            getActivity().runOnUiThread(runnable);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    public void updateArrayAdapter(ArtistsPager artistsPager)
+    {
+        if (artistsPager != null && artistsPager.artists != null) {
+            mArtistsAdapter.clear();
+
+            for (Artist artist : artistsPager.artists.items) {
+                Log.d(LOG_TAG, artist.name);
+                Log.d(LOG_TAG, artist.id);
+                Log.d(LOG_TAG, artist.genres.size() + "");
+                if (artist.images.size() == 0) {
+                    Log.d(LOG_TAG, "Has zero images!");
+                } else {
+                    Log.d(LOG_TAG, artist.images.get(0).url);
+                }
+                Log.d(LOG_TAG, String.valueOf(artist.popularity));
+                mArtistsAdapter.add(artist);
             }
+        } else {
+            Toast.makeText(getActivity(), getActivity().getString(R.string.toast_message_unable_to_locate_artist), Toast.LENGTH_LONG).show();
         }
     }
 }

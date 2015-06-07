@@ -1,6 +1,5 @@
 package com.rytedesigns.spotifystreamer.fragment;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,10 +15,16 @@ import com.rytedesigns.spotifystreamer.adapter.TracksAdapter;
 
 import java.util.ArrayList;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnItemClick;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * This class uses the Spotify Wraper API from https://github.com/kaaes/spotify-web-api-android
@@ -31,6 +36,9 @@ public class TopTenTracksFragment extends Fragment {
     private TracksAdapter mTrackAdapter;
 
     private String artistId = null;
+
+    @InjectView(R.id.listview_tracks)
+    public ListView trackListView;
 
     public TopTenTracksFragment() {
     }
@@ -50,66 +58,78 @@ public class TopTenTracksFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_top_ten_tracks, container, false);
 
+        ButterKnife.inject(this, rootView);
+
         // Found information on updating the array adapters image
         mTrackAdapter = new TracksAdapter(getActivity(), R.layout.list_item_tracks, new ArrayList<Track>());
 
-        ListView artistsListView = (ListView) rootView.findViewById(R.id.listview_tracks);
-
-        artistsListView.setAdapter(mTrackAdapter);
-
-        artistsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getActivity(), "Track " + mTrackAdapter.getItem(position).name + " was clicked.", Toast.LENGTH_SHORT).show();
-            }
-        });
+        trackListView.setAdapter(mTrackAdapter);
 
         return rootView;
+    }
+
+    @OnItemClick(R.id.listview_tracks)
+    public void onTrackItemClick(AdapterView<?> parent, View view, int position, long id)
+    {
+        Toast.makeText(getActivity(), "Track " + mTrackAdapter.getItem(position).name + " was clicked.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        SearchArtistTopTrackTask searchArtistTask = new SearchArtistTopTrackTask();
-        searchArtistTask.execute(artistId);
+
+        if (artistId != null && artistId.length() > 0) {
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
+            spotify.getArtistTopTrack(artistId, new Callback<Tracks>() {
+                @Override
+                public void success(final Tracks tracks, Response response) {
+                    Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            updateArrayAdapter(tracks);
+                        }
+                    };
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(runnable);
+                    }
+                }
+
+                @Override
+                public void failure(RetrofitError error) {
+                    if (error.getKind() == RetrofitError.Kind.NETWORK) {
+                        Runnable runnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getActivity(), R.string.toast_message_unable_to_reach_spotify, Toast.LENGTH_SHORT).show();
+                            }
+                        };
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(runnable);
+                        }
+                    }
+                }
+            });
+        }
     }
 
-    public class SearchArtistTopTrackTask extends AsyncTask<String, Void, Tracks> {
-        @Override
-        protected Tracks doInBackground(String... params) {
+    public void updateArrayAdapter(Tracks tracks)
+    {
+        if (tracks != null) {
+            mTrackAdapter.clear();
 
-            if (params != null && params.length > 0) {
-                SpotifyApi api = new SpotifyApi();
-                SpotifyService spotify = api.getService();
-
-                Tracks results = spotify.getArtistTopTrack(params[0]);
-
-                if (results != null && results.tracks != null && results.tracks.size() > 0) {
-                    return results;
+            for (Track track : tracks.tracks) {
+                Log.d(LOG_TAG, track.name);
+                if (track.album.images.size() == 0) {
+                    Log.d(LOG_TAG, "Has zero images!");
                 } else {
-                    return null;
+                    Log.d(LOG_TAG, track.album.images.get(0).url);
                 }
-            } else {
-                return null;
+
+                mTrackAdapter.add(track);
             }
-        }
-
-        @Override
-        protected void onPostExecute(Tracks tracks) {
-            if (tracks != null) {
-                mTrackAdapter.clear();
-
-                for (Track track : tracks.tracks) {
-                    Log.d(LOG_TAG, track.name);
-                    if (track.album.images.size() == 0) {
-                        Log.d(LOG_TAG, "Has zero images!");
-                    } else {
-                        Log.d(LOG_TAG, track.album.images.get(0).url);
-                    }
-
-                    mTrackAdapter.add(track);
-                }
-            }
+        } else {
+            Toast.makeText(getActivity(), R.string.toast_message_unable_to_find_top_ten_tracks, Toast.LENGTH_LONG).show();
         }
     }
 }
