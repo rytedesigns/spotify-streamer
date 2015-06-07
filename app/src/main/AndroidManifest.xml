@@ -1,20 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.rytedesigns.spotifystreamer" >
+    package="com.rytedesigns.spotifystreamer">
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/SpotifyStreamerTheme">
         <activity
-            android:name=".ArtistsActivity"
-            android:label="@string/app_name" >
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop">
+            <!-- Added singleTop so that the instance persists when up navigation is performed.
+            Found information on this at http://developer.android.com/guide/topics/manifest/manifest-intro.html -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".TopTenTracksActivity"
+            android:label="@string/title_activity_top_ten_tracks"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.rytedesigns.spotifystreamer.MainActivity" />
         </activity>
     </application>
 

@@ -1,4 +1,10 @@
 apply plugin: 'com.android.application'
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
+}
 
 android {
     compileSdkVersion 22
@@ -22,4 +28,8 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.2.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.squareup.retrofit:retrofit:1.9.0'  // Uses this to create RESTful Requests
+    compile 'com.squareup.okhttp:okhttp:2.2.0'  // Uses this to create HTTP connections
+    compile(name: "spotify-web-api-android-0.1.0", ext: 'aar')
 }

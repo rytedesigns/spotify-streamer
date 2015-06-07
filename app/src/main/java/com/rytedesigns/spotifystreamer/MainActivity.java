@@ -1,18 +1,20 @@
 package com.rytedesigns.spotifystreamer;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class ArtistsActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
+
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artists);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -30,6 +32,7 @@ public class ArtistsActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Log.d(LOG_TAG, "Settings was selected.");
             return true;
         }
 

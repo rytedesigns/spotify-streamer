@@ -1,7 +1,7 @@
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:layout="@layout/fragment_artists"
+    tools:layout="@layout/fragment_top_ten_tracks"
     android:id="@+id/fragment"
-    android:name="com.rytedesigns.spotifystreamer.fragment.ArtistSearchFragment"
+    android:name="com.rytedesigns.spotifystreamer.fragment.TopTenTracksFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />

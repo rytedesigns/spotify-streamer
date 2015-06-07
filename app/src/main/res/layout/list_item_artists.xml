@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/ListItem.LinearLayout">
+
+    <ImageView
+        android:id="@+id/artist_imageview"
+        android:src="@mipmap/ic_launcher"
+        style="@style/ListItem.ImageView" />
+
+    <TextView
+        android:id="@+id/artist_textview"
+        android:text="@string/artist_name_placeholder"
+        style="@style/ListItem.TextView.ArtistTextView" />
+
+</LinearLayout>

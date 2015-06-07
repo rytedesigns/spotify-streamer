@@ -1,8 +1,68 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="SpotifyStreamerTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. --> <!-- Support library compatibility -->
+        <item name="actionBarStyle">@style/SpotifyStreamerTheme.ActionBar</item>
+    </style>
+
+    <!-- ActionBar styles -->
+    <style name="SpotifyStreamerTheme.ActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <!-- Support library compatibility -->
+        <item name="background">@color/green</item>
+    </style>
+
+    <style name="FragementStyle" parent="SpotifyStreamerTheme">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:paddingLeft">@dimen/activity_horizontal_margin</item>
+        <item name="android:paddingRight">@dimen/activity_horizontal_margin</item>
+        <item name="android:paddingBottom">@dimen/activity_vertical_margin</item>
+        <item name="android:background">@color/light_blue</item>
+    </style>
+
+    <style name="ListItem" parent="SpotifyStreamerTheme" />
+
+    <style name="ListItem.LinearLayout" parent="ListItem">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">@dimen/artist_item_vertical_padding</item>
+        <item name="android:paddingBottom">@dimen/artist_item_vertical_padding</item>
+        <item name="android:paddingLeft">@dimen/artist_item_horizontal_padding</item>
+        <item name="android:paddingRight">@dimen/artist_item_horizontal_padding</item>
+    </style>
+
+    <style name="ListItem.ImageView" parent="ListItem">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/image_height</item>
+        <item name="android:minWidth">@dimen/image_width</item>
+        <item name="android:layout_marginRight">@dimen/artist_image_padding</item>
+        <item name="android:layout_weight">0</item>
+    </style>
+
+    <style name="ListItem.TextView" parent="ListItem">
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="ListItem.TextView.ArtistTextView" parent="ListItem.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="ListItem.TrackTextLinearLayout" parent="ListItem.TextView">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="ListItem.TextView.TrackTextView" parent="ListItem.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
     </style>
 
 </resources>
