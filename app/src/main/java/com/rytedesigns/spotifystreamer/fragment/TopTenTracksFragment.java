@@ -22,7 +22,7 @@ import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 
 /**
- * A placeholder fragment containing a simple view.
+ * This class uses the Spotify Wraper API from https://github.com/kaaes/spotify-web-api-android
  */
 public class TopTenTracksFragment extends Fragment {
 

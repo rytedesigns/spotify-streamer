@@ -28,7 +28,7 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Pager;
 
 /**
- * A placeholder fragment containing a simple view.
+ * This class uses the Spotify Wraper API from https://github.com/kaaes/spotify-web-api-android
  */
 public class ArtistSearchFragment extends Fragment {
 
